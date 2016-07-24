@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Matchmaker Client v0.5.0</title>
+	</head>
+	<body>
+		
+		<noscript>Sorry, but your browser must support JavaScript in order to run this</noscript>
+		Enter Name: <input type="text" id="playerName" />
+		Enter Score: <input type="text" id="playerScore" />
+		<button onclick="setNameAndScore()">Find Match!</button>
+		<h5 id="result"></h5>
+		<script type="text/javascript">
+			var score = 0;
+			var name = "Guest" + Math.random();
+			//var host = window.document.location.host.replace(/:.*/, '');
+			var ws = new WebSocket("ws://localhost:8080");
+			ws.binaryType = "arraybuffer";
+			window.ws = ws;
+			ws.onmessage = function(b){
+				console.log(b);
+				if(b.data.split("+")[0] == "MatchFound"){
+					document.getElementById("result").innerHTML = "Successfully found match! You are against " + b.data.split("+")[1]+ ".";
+				}else if(b.data == "MatchNotFound"){
+					document.getElementById("result").innerHTML = "No matches available...\nPlease Try Again Later";
+				}
+			};
+			ws.onerror = function(e){
+				console.log(e);
+			}
+			function writeInt8(offset, data, number) {
+				var byte1;
+				number = Math.floor(number);
+				if (number > 255) {
+					throw new Error('Int8 out of bound. Current Number: ' + number);
+				}
+				byte1 = number & 0xFF;
+				data[offset] = byte1;
+				return 1;
+			}
+			function writeString(offset, data, string) {
+				var i;
+				i = 0;
+				while (i < string.length) {
+					writeInt8(offset + i, data, string.charCodeAt(i));
+					i++;
+				}
+				return string.length;
+			}
+			function OpenSocket(){
+				
+				ws = new WebSocket("ws://" + host + ":8080");
+				
+				ws.onerror = function(e){
+					console.log("[ERROR] " + e);
+				};
+			}
+			function HandleMessage(b){
+				
+			}
+			function SetScore(sc){
+				if(score != sc){
+					score = sc;
+				}else{
+					console.log("[WARNING] Score Already set to " + sc + "!");
+				}
+			}
+			function SetName(n){
+				if(name != n){
+					name = n;
+				}else {
+					console.log("[WARNING] Name Already set to " + n + "!");
+				}
+			}
+			function setNameAndScore(){
+				SetName(document.getElementById("playerName").value);
+				SetScore(document.getElementById("playerScore").value);
+				var arr = new Uint8Array(2 + name.length);
+				b = 0;
+				b += writeInt8(b, arr, 'm'.charCodeAt(0));
+				b += writeInt8(b, arr, score);
+				b += writeString(b, arr, name);
+				console.log(arr);
+				try{
+					ws.send(arr, {binary: true});
+				}catch(e){
+					document.getElementById("result").innerHTML = e.message;
+				}
+			}
+		</script>
+	</body>
+</html>

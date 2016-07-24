@@ -1,0 +1,17 @@
+{
+  "name": "Matchmaking-Server",
+  "description": "A simple matchmaking server",
+  "version": "0.5.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RowanHarley/Matchmaking-Server"
+  },
+  "dependencies": {
+	"express": "^4.12.4",
+    "ws": "*"
+  },
+  "packageDependencies": {},
+  "scripts": {
+    "start": "node ./index.js"
+  }
+}
